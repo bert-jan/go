@@ -1,2 +1,2 @@
-# scripts
-Random scripts
+# Snippets  
+Random code
