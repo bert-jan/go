@@ -1,2 +1,2 @@
 # Snippets  
-Random code
+useful code snippets
