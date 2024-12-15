@@ -1,2 +1,2 @@
 # Snippets  
-useful code snippets
+Go code snippets
