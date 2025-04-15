@@ -1,0 +1,62 @@
+package main
+
+import (
+	"fmt"
+	"io"
+	"net/http"
+	"os"
+	"strings"
+)
+
+func main() {
+	// Get URL and STATE param from environment
+	argoURL := os.Getenv("URL")
+	state := os.Getenv("STATE")
+
+	if argoURL == "" || state == "" {
+		fmt.Println("Make sure URL and STATE are set as environment variables")
+		return
+	}
+
+	// Username and password
+	username := "yourLDAPuser"
+	password := "yourLDAPpassuser"
+
+	// Set URL and query params
+	fullURL := fmt.Sprintf("%s/api/dex/auth/ad/login?back=&state=%s", argoURL, state)
+
+	// Set payload
+	payload := fmt.Sprintf("login=%s&password=%s", username, password)
+
+	// Make request
+	req, err := http.NewRequest("POST", fullURL, strings.NewReader(payload))
+	if err != nil {
+		fmt.Println("Error making request:", err)
+		return
+	}
+
+	// Add headers
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("User-Agent", "curl/8.13.0	") // optional
+
+	// Send request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatalf("Error sending request:", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	// Read response
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatalf("Error reading response:", err)
+		return
+	}
+
+	// Print status and body
+	fmt.Println("Status:", resp.Status)
+	fmt.Println("Response:")
+	fmt.Println(string(body))
+}
