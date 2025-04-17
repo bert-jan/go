@@ -1,0 +1,42 @@
+package main
+
+import (
+	"fmt"
+	"net/http"
+	"net/http/cookiejar"
+	"net/url"
+)
+
+func main() {
+	// make cookiejar for saving cookies
+	jar, _ := cookiejar.New(nil)
+	client := &http.Client{
+		Jar: jar,
+		// no redirect follow
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
+
+	// GET /auth/login (start OIDC flow)
+	authLoginURL := "https://your-argocd-url/auth/login"
+
+	resp, err := client.Get(authLoginURL)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
+	// print redirect location (/api/dex/auth)
+	location := resp.Header.Get("Location")
+	fmt.Println("Redirect to:", location)
+
+	// read cookies from jar
+	parsedURL, _ := url.Parse(authLoginURL)
+	for _, c := range jar.Cookies(parsedURL) {
+		fmt.Printf("Cookie: %s = %s\n", c.Name, c.Value)
+		if c.Name == "argocd.oauthstate" {
+			fmt.Println("OAuth state found:", c.Value)
+		}
+	}
+}
